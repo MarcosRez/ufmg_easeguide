@@ -49,7 +49,7 @@ class _MyAppState extends State<MyApp> {
       children: [
         FlutterMap(
           options: MapOptions(
-            initialCenter: const LatLng(51.509364, -0.128928),
+            initialCenter: const LatLng(-19.869877, -43.963891),
             initialZoom: 9.2,
             onTap: handleTap,
           ),
