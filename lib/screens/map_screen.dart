@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:geolocator/geolocator.dart';
 import '../stores/store.dart';
+import 'form_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -56,24 +57,35 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     // Função para lidar com o toque no mapa
-    void handleTap(TapPosition tapPosition, LatLng latLng) {
-      _store.adicionarMarker(
-        Marker(
-          width: 150.0,
-          height: 150.0,
-          point: latLng,
-          child: const Icon(
-            Icons.location_on,
-            color: Colors.red,
-            size: 35.0,
+    Future<void> handleTap(TapPosition tapPosition, LatLng latLng) async {
+      final result = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => FormScreen(latLng: latLng),
+      ));
+
+      if (result != null) {
+        _store.adicionarMarker(
+          Marker(
+            width: 150.0,
+            height: 150.0,
+            point: latLng,
+            child: Column(
+              children: [
+                Text(result['name']),
+                const Icon(
+                  Icons.location_on,
+                  color: Colors.red,
+                  size: 35.0,
+                ),
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ease Guide - UFMG'),
+        title: const Text('Map App'),
       ),
       body: Stack(
         children: [
@@ -90,7 +102,12 @@ class _MapScreenState extends State<MapScreen> {
                 userAgentPackageName: 'com.example.app',
               ),
               Observer(
-                builder: (_) => MarkerLayer(markers: _store.markers),
+                builder: (context) {
+                  return MarkerLayer(
+                    key: ValueKey(_store.markers.length),
+                    markers: _store.markers,
+                  );
+                },
               ),
             ],
           ),

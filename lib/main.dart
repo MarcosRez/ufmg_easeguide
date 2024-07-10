@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:proj_multidisciplinar_ufmg/screens/map_screen.dart';
+import 'screens/map_screen.dart';
 
-import 'src/app.dart';
-
-void main() async {
-  runApp(
-      const Directionality(textDirection: TextDirection.ltr, child: MyApp()));
+void main() {
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -14,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ease Guide - UFMG',
+      title: 'Map App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
