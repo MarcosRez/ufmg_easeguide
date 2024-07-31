@@ -16,7 +16,7 @@ class _FormScreenState extends State<FormScreen> {
   bool _hasRampsOrElevators = false;
   double _accessibilityRating = 0.0;
   final _comments = TextEditingController();
-
+  int numAvaliacoes = 1;
   @override
   void initState() {
     super.initState();
@@ -26,7 +26,9 @@ class _FormScreenState extends State<FormScreen> {
       _hasStairs = widget.markerData!['hasStairs'] ?? false;
       _hasRampsOrElevators = widget.markerData!['hasRampsOrElevators'] ?? false;
       _accessibilityRating =
-          widget.markerData!['accessibilityRating']?.toDouble() ?? 0.0;
+          ((widget.markerData!['accessibilityRating']?.toDouble() ?? 0.0) /
+                  (widget.markerData!['numAvaliacoes'] ?? numAvaliacoes))
+              .round();
       _comments.text = widget.markerData!['comments'] ?? '';
     }
   }

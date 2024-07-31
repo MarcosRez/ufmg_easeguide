@@ -26,7 +26,19 @@ abstract class _MyAppStore with Store {
     markers.removeWhere((marker) =>
         marker['latLng'].latitude == oldMarker['latLng'].latitude &&
         marker['latLng'].longitude == oldMarker['latLng'].longitude);
-    adicionarMarker(newMarkerData);
+    final numAvaliacoes = (oldMarker['numAvaliacoes'] ?? 1) + 1;
+    final oldRating = oldMarker['accessibilityRating'];
+    final newRating = newMarkerData['accessibilityRating'];
+
+    final color =
+        getMarkerColor(((newRating + oldRating) / numAvaliacoes).round());
+
+    adicionarMarker({
+      ...newMarkerData,
+      'numAvaliacoes': numAvaliacoes,
+      'color': color,
+      'accessibilityRating': oldRating + newRating
+    });
   }
 
   @action
@@ -74,8 +86,8 @@ abstract class _MyAppStore with Store {
         'name': marker['name'] ?? '',
         'hasStairs': marker['hasStairs'] ?? false,
         'hasRampsOrElevators': marker['hasRampsOrElevators'] ?? false,
-        'accessibilityThermometer': marker['accessibilityRating'] ?? 0,
-        'comments': marker['comments']
+        'accessibilityRating': marker['accessibilityRating'] ?? 0,
+        'comments': marker['comments'],
       };
     });
 
