@@ -2,116 +2,135 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
 class FormScreen extends StatefulWidget {
-  final LatLng latLng;
+  final Map<String, dynamic>? markerData;
 
-  const FormScreen({Key? key, required this.latLng}) : super(key: key);
+  const FormScreen({Key? key, this.markerData}) : super(key: key);
 
   @override
   _FormScreenState createState() => _FormScreenState();
 }
 
 class _FormScreenState extends State<FormScreen> {
-  final _formKey = GlobalKey<FormState>();
-  String? name;
-  bool hasStairs = false;
-  bool hasRampsOrElevators = false;
-  double accessibilityRating = 0;
-  String? comments;
+  final _nameController = TextEditingController();
+  bool _hasStairs = false;
+  bool _hasRampsOrElevators = false;
+  double _accessibilityRating = 0.0;
+  final _comments = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.markerData != null) {
+      _nameController.text = widget.markerData!['name'] ?? '';
+      _hasStairs = widget.markerData!['hasStairs'] ?? false;
+      _hasRampsOrElevators = widget.markerData!['hasRampsOrElevators'] ?? false;
+      _accessibilityRating =
+          widget.markerData!['accessibilityRating']?.toDouble() ?? 0.0;
+      _comments.text = widget.markerData!['comments'] ?? '';
+    }
+  }
+
+  void _save() {
+    final name = _nameController.text;
+    final hasStairs = _hasStairs;
+    final hasRampsOrElevators = _hasRampsOrElevators;
+    final accessibilityRating = _accessibilityRating;
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, preencha o nome.')),
+      );
+      return;
+    }
+
+    Navigator.of(context).pop({
+      'latLng': widget.markerData?['latLng'] ?? const LatLng(0, 0),
+      'name': name,
+      'hasStairs': hasStairs,
+      'hasRampsOrElevators': hasRampsOrElevators,
+      'accessibilityRating': accessibilityRating,
+      'comments': _comments.text
+    });
+  }
+
+  void _cancel() {
+    Navigator.of(context).pop();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Adicionar Local'),
+        title: const Text('Detalhes do Local'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Nome'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira um nome';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  name = value;
-                },
-              ),
-              SwitchListTile(
-                title: const Text('O local possui escadas?'),
-                value: hasStairs,
-                onChanged: (value) {
-                  setState(() {
-                    hasStairs = value;
-                  });
-                },
-              ),
-              SwitchListTile(
-                title: const Text('O local possui rampas ou elevadores?'),
-                value: hasRampsOrElevators,
-                onChanged: (value) {
-                  setState(() {
-                    hasRampsOrElevators = value;
-                  });
-                },
-              ),
-              const Text('Termômetro de acessibilidade'),
-              Slider(
-                value: accessibilityRating,
-                onChanged: (value) {
-                  setState(() {
-                    accessibilityRating = value;
-                  });
-                },
-                min: 0,
-                max: 10,
-                divisions: 10,
-                label: accessibilityRating.round().toString(),
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Comentários'),
-                maxLines: 3,
-                onSaved: (value) {
-                  comments = value;
-                },
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Cancelar'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          _formKey.currentState!.save();
-                          Navigator.of(context).pop({
-                            'name': name,
-                            'hasStairs': hasStairs,
-                            'hasRampsOrElevators': hasRampsOrElevators,
-                            'accessibilityRating': accessibilityRating,
-                            'comments': comments,
-                            'latLng': widget.latLng,
-                          });
-                        }
-                      },
-                      child: const Text('Salvar'),
-                    ),
-                  ],
+        child: Column(
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Nome'),
+            ),
+            Row(
+              children: [
+                const Text('O local possui escadas?'),
+                Switch(
+                  value: _hasStairs,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasStairs = value;
+                    });
+                  },
                 ),
-              )
-            ],
-          ),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('O local possui rampas ou elevadores?'),
+                Switch(
+                  value: _hasRampsOrElevators,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasRampsOrElevators = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('Termômetro de acessibilidade'),
+                Expanded(
+                  child: Slider(
+                    value: _accessibilityRating,
+                    min: 0,
+                    max: 10,
+                    divisions: 10,
+                    label: _accessibilityRating.round().toString(),
+                    onChanged: (value) {
+                      setState(() {
+                        _accessibilityRating = value;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Comentários'),
+              maxLines: 3,
+              controller: _comments,
+            ),
+            ElevatedButton(
+              onPressed: _save,
+              child: const Text('Salvar'),
+            ),
+            ElevatedButton(
+              onPressed: _cancel,
+              child: const Text('Cancelar'),
+            ),
+          ],
         ),
       ),
     );

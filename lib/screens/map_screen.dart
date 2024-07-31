@@ -20,6 +20,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+    _store.loadMarkers(); // Carrega os marcadores salvos
     _determinePosition().then((position) {
       final currentLocation = LatLng(position.latitude, position.longitude);
       _store.adicionarCurrentLocationMarker(currentLocation);
@@ -32,7 +33,6 @@ class _MapScreenState extends State<MapScreen> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Verifica se o serviço de localização está habilitado
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return Future.error('Serviço de localização está desabilitado.');
@@ -50,45 +50,31 @@ class _MapScreenState extends State<MapScreen> {
       return Future.error('Permissão de localização negada permanentemente.');
     }
 
-    // Retorna a posição atual do dispositivo
     return await Geolocator.getCurrentPosition();
+  }
+
+  Future<void> handleTap(TapPosition tapPosition, LatLng latLng) async {
+    final result = await Navigator.of(context)
+        .push<Map<String, dynamic>>(MaterialPageRoute(
+      builder: (context) => FormScreen(markerData: {'latLng': latLng}),
+    ));
+
+    if (result != null) {
+      // Define a cor do ícone com base no valor do slider
+      Color markerColor;
+      double sliderValue = result['accessibilityRating'];
+
+      markerColor = _store.getMarkerColor(sliderValue) ?? Colors.red;
+
+      _store.adicionarMarker({
+        ...result,
+        'color': _store.getMarkerColor(result['accessibilityRating'])
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Função para lidar com o toque no mapa
-    Future<void> handleTap(TapPosition tapPosition, LatLng latLng) async {
-      final result = await Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => FormScreen(latLng: latLng),
-      ));
-
-      if (result != null) {
-        Color markerColor;
-        double sliderValue = result['accessibilityRating'];
-
-        if (sliderValue < 3) {
-          markerColor = Colors.red;
-        } else if (sliderValue <= 7) {
-          markerColor = Colors.amber;
-        } else {
-          markerColor = Colors.green;
-        }
-
-        _store.adicionarMarker(
-          Marker(
-            width: 150.0,
-            height: 150.0,
-            point: latLng,
-            child: Icon(
-              Icons.location_on,
-              color: markerColor,
-              size: 35.0,
-            ),
-          ),
-        );
-      }
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ease Guide'),
@@ -111,7 +97,21 @@ class _MapScreenState extends State<MapScreen> {
                 builder: (context) {
                   return MarkerLayer(
                     key: ValueKey(_store.markers.length),
-                    markers: _store.markers,
+                    markers: _store.markers.map((marker) {
+                      return Marker(
+                        width: marker['width'] ?? 150.0,
+                        height: marker['height'] ?? 150.0,
+                        point: marker['latLng'],
+                        child: GestureDetector(
+                          onTap: () => handleMarkerTap(marker),
+                          child: Icon(
+                            Icons.location_on,
+                            color: marker['color'] ?? Colors.red,
+                            size: 35.0,
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   );
                 },
               ),
@@ -120,5 +120,19 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> handleMarkerTap(Map<String, dynamic> markerData) async {
+    final result = await Navigator.of(context)
+        .push<Map<String, dynamic>>(MaterialPageRoute(
+      builder: (context) => FormScreen(markerData: markerData),
+    ));
+
+    if (result != null) {
+      _store.updateMarker(markerData, {
+        ...result,
+        'color': _store.getMarkerColor(result['accessibilityRating'])
+      });
+    }
   }
 }

@@ -13,41 +13,61 @@ mixin _$MyAppStore on _MyAppStore, Store {
       Atom(name: '_MyAppStore.markers', context: context);
 
   @override
-  ObservableList<Marker> get markers {
+  ObservableList<Map<String, dynamic>> get markers {
     _$markersAtom.reportRead();
     return super.markers;
   }
 
   @override
-  set markers(ObservableList<Marker> value) {
+  set markers(ObservableList<Map<String, dynamic>> value) {
     _$markersAtom.reportWrite(value, super.markers, () {
       super.markers = value;
     });
   }
 
-  late final _$_MyAppStoreActionController =
-      ActionController(name: '_MyAppStore', context: context);
+  late final _$adicionarMarkerAsyncAction =
+      AsyncAction('_MyAppStore.adicionarMarker', context: context);
 
   @override
-  void adicionarMarker(Marker marker) {
-    final _$actionInfo = _$_MyAppStoreActionController.startAction(
-        name: '_MyAppStore.adicionarMarker');
-    try {
-      return super.adicionarMarker(marker);
-    } finally {
-      _$_MyAppStoreActionController.endAction(_$actionInfo);
-    }
+  Future<void> adicionarMarker(Map<String, dynamic> marker) {
+    return _$adicionarMarkerAsyncAction
+        .run(() => super.adicionarMarker(marker));
   }
 
+  late final _$updateMarkerAsyncAction =
+      AsyncAction('_MyAppStore.updateMarker', context: context);
+
   @override
-  void adicionarCurrentLocationMarker(LatLng latLng) {
-    final _$actionInfo = _$_MyAppStoreActionController.startAction(
-        name: '_MyAppStore.adicionarCurrentLocationMarker');
-    try {
-      return super.adicionarCurrentLocationMarker(latLng);
-    } finally {
-      _$_MyAppStoreActionController.endAction(_$actionInfo);
-    }
+  Future<void> updateMarker(
+      Map<String, dynamic> oldMarker, Map<String, dynamic> newMarkerData) {
+    return _$updateMarkerAsyncAction
+        .run(() => super.updateMarker(oldMarker, newMarkerData));
+  }
+
+  late final _$adicionarCurrentLocationMarkerAsyncAction = AsyncAction(
+      '_MyAppStore.adicionarCurrentLocationMarker',
+      context: context);
+
+  @override
+  Future<void> adicionarCurrentLocationMarker(LatLng latLng) {
+    return _$adicionarCurrentLocationMarkerAsyncAction
+        .run(() => super.adicionarCurrentLocationMarker(latLng));
+  }
+
+  late final _$loadMarkersAsyncAction =
+      AsyncAction('_MyAppStore.loadMarkers', context: context);
+
+  @override
+  Future<void> loadMarkers() {
+    return _$loadMarkersAsyncAction.run(() => super.loadMarkers());
+  }
+
+  late final _$saveMarkersAsyncAction =
+      AsyncAction('_MyAppStore.saveMarkers', context: context);
+
+  @override
+  Future<void> saveMarkers() {
+    return _$saveMarkersAsyncAction.run(() => super.saveMarkers());
   }
 
   @override
