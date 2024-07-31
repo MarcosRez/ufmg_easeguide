@@ -124,14 +124,25 @@ class _FormScreenState extends State<FormScreen> {
               maxLines: 3,
               controller: _comments,
             ),
-            ElevatedButton(
-              onPressed: _save,
-              child: const Text('Salvar'),
-            ),
-            ElevatedButton(
-              onPressed: _cancel,
-              child: const Text('Cancelar'),
-            ),
+            Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: ElevatedButton(
+                      onPressed: _save,
+                      child: const Text('Salvar'),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _cancel,
+                    child: const Text('Cancelar'),
+                  ),
+                ],
+              ),
+            )
           ],
         ),
       ),
