@@ -63,20 +63,26 @@ class _MapScreenState extends State<MapScreen> {
       ));
 
       if (result != null) {
+        Color markerColor;
+        double sliderValue = result['accessibilityRating'];
+
+        if (sliderValue < 3) {
+          markerColor = Colors.red;
+        } else if (sliderValue <= 7) {
+          markerColor = Colors.amber;
+        } else {
+          markerColor = Colors.green;
+        }
+
         _store.adicionarMarker(
           Marker(
             width: 150.0,
             height: 150.0,
             point: latLng,
-            child: Column(
-              children: [
-                Text(result['name']),
-                const Icon(
-                  Icons.location_on,
-                  color: Colors.red,
-                  size: 35.0,
-                ),
-              ],
+            child: Icon(
+              Icons.location_on,
+              color: markerColor,
+              size: 35.0,
             ),
           ),
         );
@@ -85,7 +91,7 @@ class _MapScreenState extends State<MapScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Map App'),
+        title: const Text('Ease Guide'),
       ),
       body: Stack(
         children: [

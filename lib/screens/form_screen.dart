@@ -80,33 +80,36 @@ class _FormScreenState extends State<FormScreen> {
                   comments = value;
                 },
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Cancelar'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        _formKey.currentState!.save();
-                        Navigator.of(context).pop({
-                          'name': name,
-                          'hasStairs': hasStairs,
-                          'hasRampsOrElevators': hasRampsOrElevators,
-                          'accessibilityRating': accessibilityRating,
-                          'comments': comments,
-                          'latLng': widget.latLng,
-                        });
-                      }
-                    },
-                    child: const Text('Salvar'),
-                  ),
-                ],
-              ),
+              Padding(
+                padding: EdgeInsets.only(top: 20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Cancelar'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _formKey.currentState!.save();
+                          Navigator.of(context).pop({
+                            'name': name,
+                            'hasStairs': hasStairs,
+                            'hasRampsOrElevators': hasRampsOrElevators,
+                            'accessibilityRating': accessibilityRating,
+                            'comments': comments,
+                            'latLng': widget.latLng,
+                          });
+                        }
+                      },
+                      child: const Text('Salvar'),
+                    ),
+                  ],
+                ),
+              )
             ],
           ),
         ),
