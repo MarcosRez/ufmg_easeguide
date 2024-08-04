@@ -60,13 +60,21 @@ class _MapScreenState extends State<MapScreen> {
     ));
 
     if (result != null) {
-      // Define a cor do ícone com base no valor do slider
-      Color markerColor;
-      double sliderValue = result['accessibilityRating'];
-
-      markerColor = _store.getMarkerColor(sliderValue) ?? Colors.red;
-
       _store.adicionarMarker({
+        ...result,
+        'color': _store.getMarkerColor(result['accessibilityRating'])
+      });
+    }
+  }
+
+  Future<void> handleMarkerTap(Map<String, dynamic> markerData) async {
+    final result = await Navigator.of(context)
+        .push<Map<String, dynamic>>(MaterialPageRoute(
+      builder: (context) => FormScreen(markerData: markerData),
+    ));
+
+    if (result != null) {
+      _store.updateMarker(markerData, {
         ...result,
         'color': _store.getMarkerColor(result['accessibilityRating'])
       });
@@ -120,19 +128,5 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> handleMarkerTap(Map<String, dynamic> markerData) async {
-    final result = await Navigator.of(context)
-        .push<Map<String, dynamic>>(MaterialPageRoute(
-      builder: (context) => FormScreen(markerData: markerData),
-    ));
-
-    if (result != null) {
-      _store.updateMarker(markerData, {
-        ...result,
-        'color': _store.getMarkerColor(result['accessibilityRating'])
-      });
-    }
   }
 }

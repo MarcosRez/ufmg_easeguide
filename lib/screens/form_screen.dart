@@ -14,9 +14,12 @@ class _FormScreenState extends State<FormScreen> {
   final _nameController = TextEditingController();
   bool _hasStairs = false;
   bool _hasRampsOrElevators = false;
+  bool _hasAccessibleBathrooms = false;
+  bool _hasGoodSpaceForMovement = false;
   double _accessibilityRating = 0.0;
   final _comments = TextEditingController();
-  int numAvaliacoes = 1;
+  List<Map<String, dynamic>> _ratings = [];
+
   @override
   void initState() {
     super.initState();
@@ -25,11 +28,15 @@ class _FormScreenState extends State<FormScreen> {
       _nameController.text = widget.markerData!['name'] ?? '';
       _hasStairs = widget.markerData!['hasStairs'] ?? false;
       _hasRampsOrElevators = widget.markerData!['hasRampsOrElevators'] ?? false;
+      _hasAccessibleBathrooms =
+          widget.markerData!['hasAccessibleBathrooms'] ?? false;
+      _hasGoodSpaceForMovement =
+          widget.markerData!['hasGoodSpaceForMovement'] ?? false;
       _accessibilityRating =
-          ((widget.markerData!['accessibilityRating']?.toDouble() ?? 0.0) /
-                  (widget.markerData!['numAvaliacoes'] ?? numAvaliacoes))
-              .round();
-      _comments.text = widget.markerData!['comments'] ?? '';
+          widget.markerData!['accessibilityRating']?.toDouble() ?? 0.0;
+      _comments.text = '';
+      _ratings =
+          List<Map<String, dynamic>>.from(widget.markerData!['ratings'] ?? []);
     }
   }
 
@@ -37,6 +44,8 @@ class _FormScreenState extends State<FormScreen> {
     final name = _nameController.text;
     final hasStairs = _hasStairs;
     final hasRampsOrElevators = _hasRampsOrElevators;
+    final hasAccessibleBathrooms = _hasAccessibleBathrooms;
+    final hasGoodSpaceForMovement = _hasGoodSpaceForMovement;
     final accessibilityRating = _accessibilityRating;
 
     if (name.isEmpty) {
@@ -46,13 +55,25 @@ class _FormScreenState extends State<FormScreen> {
       return;
     }
 
+    _ratings.add({
+      'rating': accessibilityRating,
+      'comment': _comments.text,
+      'hasStairs': hasStairs,
+      'hasRampsOrElevators': hasRampsOrElevators,
+      'hasAccessibleBathrooms': hasAccessibleBathrooms,
+      'hasGoodSpaceForMovement': hasGoodSpaceForMovement,
+    });
+
     Navigator.of(context).pop({
       'latLng': widget.markerData?['latLng'] ?? const LatLng(0, 0),
       'name': name,
       'hasStairs': hasStairs,
       'hasRampsOrElevators': hasRampsOrElevators,
+      'hasAccessibleBathrooms': hasAccessibleBathrooms,
+      'hasGoodSpaceForMovement': hasGoodSpaceForMovement,
       'accessibilityRating': accessibilityRating,
-      'comments': _comments.text
+      'comments': _comments.text,
+      'ratings': _ratings,
     });
   }
 
@@ -102,6 +123,32 @@ class _FormScreenState extends State<FormScreen> {
             ),
             Row(
               children: [
+                const Text('O local possui banheiros acessíveis?'),
+                Switch(
+                  value: _hasAccessibleBathrooms,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasAccessibleBathrooms = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Text('O local possui bom espaço para movimentação?'),
+                Switch(
+                  value: _hasGoodSpaceForMovement,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasGoodSpaceForMovement = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            Row(
+              children: [
                 const Text('Termômetro de acessibilidade'),
                 Expanded(
                   child: Slider(
@@ -142,7 +189,33 @@ class _FormScreenState extends State<FormScreen> {
                   ),
                 ],
               ),
-            )
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _ratings.length,
+                itemBuilder: (context, index) {
+                  final rating = _ratings[index];
+                  return ListTile(
+                    title: Text('Nota: ${rating['rating']}'),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Comentário: ${rating['comment']}'),
+                        Text(
+                            'Possui escadas: ${rating['hasStairs'] ? "Sim" : "Não"}'),
+                        Text(
+                            'Possui rampas ou elevadores: ${rating['hasRampsOrElevators'] ? "Sim" : "Não"}'),
+                        Text(
+                            'Possui banheiros acessíveis: ${rating['hasAccessibleBathrooms'] ? "Sim" : "Não"}'),
+                        Text(
+                            'Bom espaço para movimentação: ${rating['hasGoodSpaceForMovement'] ? "Sim" : "Não"}'),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

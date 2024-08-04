@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,19 +25,31 @@ abstract class _MyAppStore with Store {
     markers.removeWhere((marker) =>
         marker['latLng'].latitude == oldMarker['latLng'].latitude &&
         marker['latLng'].longitude == oldMarker['latLng'].longitude);
-    final numAvaliacoes = (oldMarker['numAvaliacoes'] ?? 1) + 1;
-    final oldRating = oldMarker['accessibilityRating'];
-    final newRating = newMarkerData['accessibilityRating'];
 
-    final color =
-        getMarkerColor(((newRating + oldRating) / numAvaliacoes).round());
-
-    adicionarMarker({
+    final marker = {
       ...newMarkerData,
-      'numAvaliacoes': numAvaliacoes,
-      'color': color,
-      'accessibilityRating': oldRating + newRating
-    });
+      'ratings': [
+        ...oldMarker['ratings'],
+        {
+          'rating': newMarkerData['accessibilityRating'],
+          'comment': newMarkerData['comments'],
+          'hasStairs': newMarkerData['hasStairs'],
+          'hasRampsOrElevators': newMarkerData['hasRampsOrElevators'],
+          'hasAccessibleBathrooms': newMarkerData['hasAccessibleBathrooms'],
+          'hasGoodSpaceForMovement': newMarkerData['hasGoodSpaceForMovement'],
+        }
+      ]
+    };
+
+    double ratingAvg = marker['ratings']
+            .map((rating) => rating['rating'])
+            .reduce((value, element) => value + element) /
+        marker['ratings'].length;
+
+    final color = getMarkerColor(ratingAvg.round() as double);
+
+    adicionarMarker(
+        {...marker, 'color': color, 'accessibilityRating': ratingAvg});
   }
 
   @action
@@ -51,7 +62,10 @@ abstract class _MyAppStore with Store {
       'color': Colors.blue,
       'name': '',
       'hasStairs': false,
-      'hasRampsOrElevators': false
+      'hasRampsOrElevators': false,
+      'hasAccessibleBathrooms': false,
+      'hasGoodSpaceForMovement': false,
+      'ratings': []
     });
     await saveMarkers();
   }
@@ -76,18 +90,18 @@ abstract class _MyAppStore with Store {
   @action
   Future<void> saveMarkers() async {
     final prefs = await SharedPreferences.getInstance();
-    print(markers);
     final Iterable<Map<String, dynamic>> markerList = markers.map((marker) {
       final latLng = marker['latLng'];
-      final iconColor = marker['color'];
       return {
         'lat': latLng.latitude ?? 0,
         'lng': latLng.longitude ?? 0,
         'name': marker['name'] ?? '',
         'hasStairs': marker['hasStairs'] ?? false,
         'hasRampsOrElevators': marker['hasRampsOrElevators'] ?? false,
+        'hasAccessibleBathrooms': marker['hasAccessibleBathrooms'] ?? false,
+        'hasGoodSpaceForMovement': marker['hasGoodSpaceForMovement'] ?? false,
         'accessibilityRating': marker['accessibilityRating'] ?? 0,
-        'comments': marker['comments'],
+        'ratings': marker['ratings'] ?? []
       };
     });
 
